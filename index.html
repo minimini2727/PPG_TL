@@ -125,6 +125,27 @@ b,strong,h1,h2{font-weight:400}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1d2330;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:60}
 .toast.show{opacity:1}
 
+/* ===== 10/30 굿바이 칸 ===== */
+.cell.bye{background:linear-gradient(165deg,#fff3e4 0%,#ffdcd0 50%,#f1d2f5 100%);overflow:hidden}
+.cell.bye:hover{background:linear-gradient(165deg,#ffeedb 0%,#ffd4c6 50%,#ecc8f2 100%)}
+.bye-foot{margin-top:auto;text-align:right;line-height:1.1;padding-top:4px}
+.bye-foot b{display:block;font-weight:800;font-size:17px;letter-spacing:.3px;background:linear-gradient(90deg,#e8590c,#c2255c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bye-foot small{font-size:10.5px;color:#a5466b}
+.cell.bye > *:not(.bye-art){position:relative;z-index:1}
+.cell.bye .chip{box-shadow:0 1px 3px rgba(120,60,40,.12)}
+.cell.bye .chip.event{background:rgba(238,241,255,.92)}
+.cell.bye .chip.ps{background:rgba(255,241,230,.92)}
+.cell.bye .chip.vac{background:rgba(235,251,238,.92)}
+.cell.bye:not(.today) .dnum{color:#c2410c}
+.bye-tag{font-size:10.5px;font-weight:400;color:#fff;background:linear-gradient(90deg,#f97316,#e8590c 50%,#c2255c);padding:1px 7px;border-radius:999px;white-space:nowrap;letter-spacing:.2px}
+.bye-art{position:absolute;inset:0;pointer-events:none;z-index:0}
+.bye-art svg{width:100%;height:100%;display:block}
+.bye-art .plane{animation:byeFly 3.6s ease-in-out infinite}
+@keyframes byeFly{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(3px,-3px) rotate(-3deg)}}
+@media (prefers-reduced-motion:reduce){.bye-art .plane{animation:none}}
+@media (max-width:640px){.bye-tag,.bye-foot{display:none}}
+@media print{.bye-art .plane{animation:none}}
+
 /* responsive */
 @media (max-width:1000px){
   .layout{grid-template-columns:1fr}
@@ -371,6 +392,26 @@ function timeText(it){
   return it.start||"";
 }
 
+/* ===== 특별한 날: 10/30 굿바이 ===== */
+const BYE_DATE="2026-10-30";
+const BYE_ART=`<div class="bye-art" aria-hidden="true"><svg viewBox="0 0 200 130" preserveAspectRatio="xMaxYMax slice" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<radialGradient id="byeSun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffb366"/><stop offset=".7" stop-color="#ff8a5c" stop-opacity=".85"/><stop offset="1" stop-color="#ff7a7a" stop-opacity="0"/></radialGradient>
+<linearGradient id="byeHill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4a3a8" stop-opacity=".55"/><stop offset="1" stop-color="#d98bc8" stop-opacity=".55"/></linearGradient>
+</defs>
+<circle cx="158" cy="118" r="44" fill="url(#byeSun)" opacity=".75"/>
+<circle cx="158" cy="118" r="22" fill="#ffc38a" opacity=".9"/>
+<path d="M0 122 Q40 108 82 116 T200 110 V130 H0Z" fill="url(#byeHill)"/>
+<path d="M0 128 Q60 118 120 124 T200 121 V130 H0Z" fill="#c77dba" opacity=".35"/>
+<path d="M18 98 C55 88 70 60 112 66 S150 50 166 34" fill="none" stroke="#e8590c" stroke-width="1.4" stroke-dasharray="3 4" stroke-linecap="round" opacity=".55"/>
+<g class="plane" style="transform-origin:178px 26px">
+<path d="M166 34 L194 16 L180 40 L176 32 Z" fill="#fff" stroke="#e8590c" stroke-width="1.3" stroke-linejoin="round"/>
+<path d="M176 32 L194 16 L172 30" fill="#ffd8c2" stroke="#e8590c" stroke-width="1.1" stroke-linejoin="round"/>
+</g>
+<g fill="#f06595" opacity=".6"><path d="M130 52 c-2-3-6-1-4 2 l4 4 4-4 c2-3-2-5-4-2z"/><path d="M96 40 c-1.5-2-4.5-.8-3 1.5 l3 3 3-3 c1.5-2.3-1.5-3.5-3-1.5z"/></g>
+<g fill="#f59f00" opacity=".7"><path d="M146 70 l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z"/><path d="M60 50 l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z"/></g>
+</svg></div>`;
+
 /* ===== 렌더 ===== */
 function render(){
   const y=cur.getFullYear(), m=cur.getMonth();
@@ -391,6 +432,7 @@ function render(){
     if(hol) cls.push("holi");
     if(ds===today) cls.push("today");
     if(ds===selected) cls.push("sel");
+    const isBye=ds===BYE_DATE; if(isBye) cls.push("bye");
     const list=itemsOn(ds);
     const chips=list.map(it=>{
       if(it.type==="vac") return `<div class="chip vac" data-id="${it.id}"><span class="tag">휴가</span>${esc(it.person)} ${esc(it.vacKind)}</div>`;
@@ -401,8 +443,8 @@ function render(){
     }).join("");
     const dots=list.slice(0,6).map(it=>`<span style="background:var(--${it.type==="event"?"ev":it.type})"></span>`).join("");
     html+=`<div class="${cls.join(" ")}" data-date="${ds}">
-      <div class="dhead"><span class="dnum">${d.getDate()}</span>${hol?`<span class="hname" title="${esc(hol)}">${esc(hol)}</span>`:""}<button class="addbtn" data-add="${ds}" title="이 날짜에 등록">+</button></div>
-      ${chips}<div class="count-badge">${dots}</div></div>`;
+      ${isBye?BYE_ART:""}<div class="dhead"><span class="dnum">${d.getDate()}</span>${isBye?`<span class="bye-tag">👋 Bye</span>`:""}${hol?`<span class="hname" title="${esc(hol)}">${esc(hol)}</span>`:""}<button class="addbtn" data-add="${ds}" title="이 날짜에 등록">+</button></div>
+      ${chips}${isBye?`<div class="bye-foot"><b>Goodbye</b><small>그동안 고마웠어요 :)</small></div>`:""}<div class="count-badge">${dots}</div></div>`;
   }
   $("#grid").innerHTML=html;
   renderStats(y,m);
